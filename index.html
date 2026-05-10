@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Loading...</title>
+    <title>加载中...</title>
     <link id="favicon" rel="icon" href="">
     <link rel="stylesheet" href="./style.css">
 </head>
@@ -26,10 +26,13 @@
     <div class="main">
         <div id="mainTitle" class="title"></div>
         <div id="subTitle" class="subtitle"></div>
-        <div id="mobileHint" class="hint">点击屏幕开启音乐</div>
     </div>
 
     <div class="mouseGlow" id="mouseGlow"></div>
+    
+    <div id="musicControl" class="music-btn" style="display: none;">
+        <span id="musicIcon">🔇</span>
+    </div>
 
     <audio id="bgm" loop></audio>
 
