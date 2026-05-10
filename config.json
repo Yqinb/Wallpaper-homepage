@@ -1,0 +1,33 @@
+{
+  "siteName": "Ultimate Anime Homepage",
+
+  "title": "Ciallo～(∠・ω＜)⌒☆",
+
+  "subtitle": "✨ Chaos Dreamscape ✨",
+
+  "favicon": "./icons/favicon.png",
+
+  "changeMode": "daily",
+
+  "changeInterval": 300,
+
+  "particleCount": 120,
+
+  "textAmount": 40,
+
+  "textSpeedMin": 10,
+
+  "textSpeedMax": 28,
+
+  "enableMusic": false,
+
+  "music": "./music/bgm.mp3",
+
+  "musicVolume": 0.35,
+
+  "images": [
+    "./images/1.jpg",
+    "./images/2.jpg",
+    "./images/3.jpg"
+  ]
+}
