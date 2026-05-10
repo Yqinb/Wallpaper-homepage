@@ -1,74 +1,96 @@
+/**
+ * 完整逻辑：先显示 UI，后探测资源，绝不卡死
+ */
+
 const bgA = document.getElementById('bgA'), bgB = document.getElementById('bgB');
 const titleEl = document.getElementById('mainTitle'), subEl = document.getElementById('subTitle');
-const clockEl = document.getElementById('clock'), dateEl = document.getElementById('date');
 const canvas = document.getElementById('particleCanvas'), ctx = canvas.getContext('2d');
 const bgm = document.getElementById('bgm'), musicBtn = document.getElementById('musicControl'), musicIcon = document.getElementById('musicIcon');
 const mouseGlow = document.getElementById('mouseGlow');
 
-const IMAGE_EXTS = ['.jpg', '.JPG', '.png', '.PNG', '.webp', '.WEBP', '.jpeg', '.JPEG'];
-const MUSIC_EXTS = ['.mp3', '.MP3', '.m4a', '.M4A', '.ogg', '.OGG'];
+// 后缀穷举
+const IMAGE_EXTS = ['.jpg', '.JPG', '.png', '.PNG', '.webp', '.WEBP'];
+const MUSIC_EXTS = ['.mp3', '.MP3', '.m4a', '.M4A'];
 
-let cfg = { title: "青昱", subtitle: "Ciallo~", changeInterval: 20, particleCount: 80, musicVolume: 0.4 };
-let particles = [], usingA = true, activeTextCount = 0;
-let validImages = [], validMusic = [];
+// 默认保底配置
+let cfg = {
+    title: "青昱", subtitle: "Ciallo~", changeInterval: 20, 
+    particleCount: 80, musicVolume: 0.4, defaultBgColor: "#1a1a2e",
+    titleSize: "clamp(30px, 12vw, 80px)", subtitleSize: "18px",
+    textOpacity: 0.5, textSpawnRate: 1500
+};
+
+let particles = [], usingA = true, activeTextCount = 0, validImages = [], validMusic = [];
 
 async function init() {
+    // 1. 获取配置
     try {
         const res = await fetch('./config.json?v=' + Date.now());
         if (res.ok) Object.assign(cfg, await res.json());
-    } catch (e) { console.warn("Default config used"); }
+    } catch (e) { console.warn("Using defaults"); }
 
-    titleEl.innerText = cfg.title;
-    subEl.innerText = cfg.subtitle;
-    document.title = cfg.siteName || cfg.title;
+    // 2. 立即渲染 UI，避免“正在初始化”卡顿
+    renderPage();
 
-    // 探测资源
-    validImages = await smartDetect('./images/', 'image', 30);
-    validMusic = await smartDetect('./music/', 'audio', 15);
-
-    setupBackgrounds();
-    setupMusic();
+    // 3. 启动不依赖资源的模块
     setupClock();
     setupParticles();
     setupTexts();
     setupInteractions();
+
+    // 4. 后台扫描 images/ 和 music/
+    scanResources();
+}
+
+function renderPage() {
+    titleEl.innerText = cfg.title;
+    subEl.innerText = cfg.subtitle;
+    titleEl.style.fontSize = cfg.titleSize;
+    subEl.style.fontSize = cfg.subtitleSize;
+    if(cfg.titleShadow) titleEl.style.filter = `drop-shadow(${cfg.titleShadow})`;
+    
+    document.title = cfg.siteName || cfg.title;
+    document.body.style.backgroundColor = cfg.defaultBgColor;
+    document.documentElement.style.setProperty('--text-op', cfg.textOpacity);
+    document.documentElement.style.setProperty('--bg-transition-time', (cfg.transitionSpeed || 1.8) + 's');
+}
+
+async function scanResources() {
+    // 探测图片 1..20，音乐 1..10
+    validImages = await smartDetect('./images/', 'image', 20);
+    validMusic = await smartDetect('./music/', 'audio', 10);
+    
+    if (validImages.length > 0) setupBackgrounds();
+    if (validMusic.length > 0) setupMusic();
 }
 
 async function smartDetect(path, type, max) {
-    let results = [];
+    let list = [];
     const exts = type === 'image' ? IMAGE_EXTS : MUSIC_EXTS;
     for (let i = 1; i <= max; i++) {
         let found = false;
         for (const ext of exts) {
             const url = `${path}${i}${ext}`;
-            const isExist = await new Promise(resolve => {
-                if (type === 'image') {
-                    const img = new Image();
-                    img.onload = () => resolve(true);
-                    img.onerror = () => resolve(false);
-                    img.src = url;
-                } else {
-                    const audio = new Audio();
-                    audio.onloadedmetadata = () => resolve(true);
-                    audio.onerror = () => resolve(false);
-                    audio.src = url;
-                }
+            const ok = await new Promise(res => {
+                const el = type === 'image' ? new Image() : new Audio();
+                if (type === 'image') { el.onload = () => res(true); el.onerror = () => res(false); }
+                else { el.onloadedmetadata = () => res(true); el.onerror = () => res(false); }
+                el.src = url;
             });
-            if (isExist) { results.push(url); found = true; break; }
+            if (ok) { list.push(url); found = true; break; }
         }
-        if (!found) break;
+        if (!found) break; // 序号中断则停止
     }
-    return results;
+    return list;
 }
 
 function setupBackgrounds() {
-    if (validImages.length === 0) return;
     const change = (idx) => {
         const next = usingA ? bgB : bgA, curr = usingA ? bgA : bgB;
-        const temp = new Image();
-        temp.src = validImages[idx % validImages.length];
-        temp.onload = () => {
-            next.src = temp.src;
+        const img = new Image();
+        img.src = validImages[idx % validImages.length];
+        img.onload = () => {
+            next.src = img.src;
             next.classList.add('active');
             curr.classList.remove('active');
             usingA = !usingA;
@@ -79,24 +101,36 @@ function setupBackgrounds() {
 }
 
 function setupMusic() {
-    if (validMusic.length === 0) return;
     musicBtn.style.display = 'flex';
     bgm.volume = cfg.musicVolume;
-
-    const playRandom = () => {
-        const track = validMusic[Math.floor(Math.random() * validMusic.length)];
-        bgm.src = track;
-        bgm.play().then(() => musicIcon.innerText = "🔊").catch(() => {
-            musicIcon.innerText = "🔇";
-        });
+    const playNext = () => {
+        bgm.src = validMusic[Math.floor(Math.random() * validMusic.length)];
+        bgm.play().then(() => musicIcon.innerText = "🔊").catch(() => musicIcon.innerText = "🔇");
     };
-
-    bgm.onended = playRandom;
+    bgm.onended = playNext;
     musicBtn.addEventListener('click', () => {
-        if (bgm.paused) {
-            if (!bgm.src) playRandom(); else bgm.play();
-            musicIcon.innerText = "🔊";
-        } else {
+        if (bgm.paused) { if(!bgm.src) playNext(); else bgm.play(); musicIcon.innerText = "🔊"; }
+        else { bgm.pause(); musicIcon.innerText = "🔇"; }
+    });
+}
+
+function setupParticles() {
+    const res = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    window.addEventListener('resize', res); res();
+    for (let i = 0; i < cfg.particleCount; i++) {
+        particles.push({ 
+            x: Math.random() * canvas.width, y: Math.random() * canvas.height, 
+            vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4, 
+            size: Math.random() * (cfg.particleSizeMax || 2), opacity: Math.random() * 0.5 
+        });
+    }
+    const anim = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = `rgba(${cfg.particleColor || '255,255,255'}, 0.5)`;
+        particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+            if (p.y < 0 || p.y > canvas.height        } else {
             bgm.pause();
             musicIcon.innerText = "🔇";
         }
