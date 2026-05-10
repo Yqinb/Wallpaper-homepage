@@ -1,26 +1,26 @@
 {
-  "siteName": "青昱个人主页",
+  "siteName": "青昱的引导页",
   "title": "Ciallo～(∠・ω＜)⌒☆",
-  "subtitle": "✨ 在群星闪烁的夜晚与你相遇 ✨",
-  "favicon": "./assets/my_icon.ico",
+  "subtitle": "✨ 所有的温柔都值得被珍藏 ✨",
+  "favicon": "./icons/fav.ico",
 
   "changeMode": "interval",
-  "changeInterval": 15,
+  "changeInterval": 20,
   "transitionSpeed": 2.0,
 
-  "particleCount": 80,
-  "textAmount": 25,
-  "textSpeedMin": 12,
+  "particleCount": 100,
+  "textAmount": 30,
+  "textSpeedMin": 10,
   "textSpeedMax": 25,
-  "textSpawnRate": 1200,
+  "textSpawnRate": 1000,
 
   "enableMusic": true,
-  "musicPath": "./assets/main_theme.mp3",
+  "musicPath": "./music/any_song_name.mp3",
   "musicVolume": 0.4,
 
   "images": [
-    "./assets/bg_spring.png",
-    "./assets/summer_vibes.jpg",
-    "https://api.paugram.com/wallpaper/" 
+    "./images/anything_1.jpg",
+    "./images/forest_02.png",
+    "./images/cool_wallpaper.webp"
   ]
 }
