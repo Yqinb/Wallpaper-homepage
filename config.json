@@ -1,26 +1,16 @@
 {
-  "siteName": "青昱的引导页",
+  "siteName": "青昱的个人空间",
   "title": "Ciallo～(∠・ω＜)⌒☆",
-  "subtitle": "✨ 所有的温柔都值得被珍藏 ✨",
-  "favicon": "./icons/fav.ico",
+  "subtitle": "✨ 所有的遇见，都是久别重逢 ✨",
+  "favicon": "./favicon.ico",
 
-  "changeMode": "interval",
+  "// 轮播设置": "changeInterval 单位为秒",
   "changeInterval": 20,
-  "transitionSpeed": 2.0,
+  "transitionSpeed": 1.8,
 
+  "// 特效设置": "particleCount 建议在 50-150 之间",
   "particleCount": 100,
-  "textAmount": 30,
-  "textSpeedMin": 10,
-  "textSpeedMax": 25,
-  "textSpawnRate": 1000,
 
-  "enableMusic": true,
-  "musicPath": "./music/any_song_name.mp3",
-  "musicVolume": 0.4,
-
-  "images": [
-    "./images/anything_1.jpg",
-    "./images/forest_02.png",
-    "./images/cool_wallpaper.webp"
-  ]
+  "// 音乐设置": "musicVolume 范围 0.0 到 1.0",
+  "musicVolume": 0.4
 }
