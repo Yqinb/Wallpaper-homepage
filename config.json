@@ -1,9 +1,9 @@
 {
-  "siteName": "Ultimate Anime Homepage",
+  "siteName": "青昱",
 
   "title": "Ciallo～(∠・ω＜)⌒☆",
 
-  "subtitle": "✨ Chaos Dreamscape ✨",
+  "subtitle": "✨ vvvvvvvvv ✨",
 
   "favicon": "./icons/favicon.png",
 
@@ -26,7 +26,7 @@
   "musicVolume": 0.35,
 
   "images": [
-    "./images/1.jpg",
+    "./images/1.png",
     "./images/2.jpg",
     "./images/3.jpg"
   ]
