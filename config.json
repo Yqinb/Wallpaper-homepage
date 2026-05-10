@@ -1,32 +1,39 @@
 {
   "siteName": "青昱的个人主页",
-  "title": "Ciallo～(∠・ω＜)⌒☆",
-  "subtitle": "✨ 所有的遇见，都是久别重逢 ✨",
-  "favicon": "./favicon.ico",
 
-  "说明_背景设置": "defaultBgColor是没图时的保底色，changeInterval是切换秒数",
+  "title": "Ciallo～(∠・ω＜)⌒☆",
+
+  "subtitle": "✨ 所有的遇见，都是久别重逢 ✨",
+
   "defaultBgColor": "#1a1a2e",
+
   "changeInterval": 20,
+
   "transitionSpeed": 1.8,
 
-  "说明_标题设置": "titleSize建议使用clamp，确保手机端不溢出",
   "titleSize": "clamp(28px, 12vw, 85px)",
+
   "subtitleSize": "clamp(16px, 4vw, 22px)",
+
   "titleShadow": "0 0 15px rgba(255, 120, 220, 0.4)",
 
-  "说明_文字雨": "textSpawnRate是产生新词条的毫秒数，越小越多",
   "textFontSizeMin": 14,
+
   "textFontSizeMax": 26,
+
   "textOpacity": 0.5,
+
   "textFallSpeedMin": 10,
+
   "textFallSpeedMax": 20,
+
   "textSpawnRate": 1500,
 
-  "说明_粒子": "particleCount是背景光点的数量",
   "particleCount": 100,
-  "particleColor": "255, 255, 255",
+
+  "particleColor": "255,255,255",
+
   "particleSizeMax": 2,
 
-  "说明_音乐": "volume范围是0到1",
   "musicVolume": 0.4
 }
