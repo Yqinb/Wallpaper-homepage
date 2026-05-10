@@ -1,80 +1,88 @@
-const bgA = document.getElementById('bgA');
-const bgB = document.getElementById('bgB');
-const titleEl = document.getElementById('mainTitle');
-const subEl = document.getElementById('subTitle');
-const clockEl = document.getElementById('clock');
-const dateEl = document.getElementById('date');
-const canvas = document.getElementById('particleCanvas');
-const ctx = canvas.getContext('2d');
-const bgm = document.getElementById('bgm');
-const musicBtn = document.getElementById('musicControl');
-const musicIcon = document.getElementById('musicIcon');
+const bgA = document.getElementById('bgA'), bgB = document.getElementById('bgB');
+const titleEl = document.getElementById('mainTitle'), subEl = document.getElementById('subTitle');
+const clockEl = document.getElementById('clock'), dateEl = document.getElementById('date');
+const canvas = document.getElementById('particleCanvas'), ctx = canvas.getContext('2d');
+const bgm = document.getElementById('bgm'), musicBtn = document.getElementById('musicControl'), musicIcon = document.getElementById('musicIcon');
 const mouseGlow = document.getElementById('mouseGlow');
 
 let cfg, particles = [], usingA = true, activeTextCount = 0;
+let validImages = [], validMusic = [];
 
 async function init() {
     try {
         const res = await fetch('./config.json?v=' + Date.now());
         cfg = await res.json();
 
-        // 基础信息应用
-        document.title = cfg.siteName;
         titleEl.innerText = cfg.title;
         subEl.innerText = cfg.subtitle;
+        document.title = cfg.siteName;
         document.getElementById('favicon').href = cfg.favicon;
-        document.documentElement.style.setProperty('--bg-transition-time', (cfg.transitionSpeed || 1.5) + 's');
 
-        // 初始化各个模块
+        // 自动化探测：探测 1, 2, 3...
+        validImages = await autoDetect('./images/', '.jpg', 50);
+        validMusic = await autoDetect('./music/', '.mp3', 20);
+
         setupBackgrounds();
+        setupMusic();
         setupClock();
         setupParticles();
         setupTexts();
-        setupMusic();
         setupInteractions();
-    } catch (e) {
-        console.error("配置文件加载失败，请检查路径和格式", e);
+    } catch (e) { console.error("Init Error", e); }
+}
+
+// 核心探测函数：尝试加载直到失败
+async function autoDetect(path, ext, max) {
+    let list = [];
+    for (let i = 1; i <= max; i++) {
+        const url = `${path}${i}${ext}`;
+        const exists = await new Promise(resolve => {
+            if (ext === '.jpg') {
+                const img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                img.src = url;
+            } else {
+                const audio = new Audio();
+                audio.oncanplaythrough = () => resolve(true);
+                audio.onerror = () => resolve(false);
+                audio.src = url;
+            }
+        });
+        if (exists) list.push(url); else break;
     }
+    return list;
 }
 
 function setupBackgrounds() {
-    const imgs = cfg.images;
-    if (!imgs || imgs.length === 0) return;
-
-    function change(idx) {
-        const url = imgs[idx % imgs.length];
-        const next = usingA ? bgB : bgA;
-        const curr = usingA ? bgA : bgB;
-        next.src = url;
-        next.onload = () => {
-            next.classList.add('active');
-            curr.classList.remove('active');
-            usingA = !usingA;
-        };
-    }
-
-    if (cfg.changeMode === 'daily') {
-        change(new Date().getDate());
-    } else {
-        change(0);
-        let i = 1;
-        setInterval(() => change(i++), (cfg.changeInterval || 30) * 1000);
-    }
+    if (validImages.length === 0) return;
+    const change = (idx) => {
+        const next = usingA ? bgB : bgA, curr = usingA ? bgA : bgB;
+        next.src = validImages[idx % validImages.length];
+        next.onload = () => { next.classList.add('active'); curr.classList.remove('active'); usingA = !usingA; };
+    };
+    change(0);
+    let i = 1;
+    setInterval(() => change(i++), (cfg.changeInterval || 20) * 1000);
 }
 
 function setupMusic() {
-    if (!cfg.enableMusic || !cfg.musicPath) return;
-
-    bgm.src = cfg.musicPath;
-    bgm.volume = cfg.musicVolume || 0.4;
+    if (validMusic.length === 0) return;
     musicBtn.style.display = 'flex';
+    bgm.volume = cfg.musicVolume || 0.4;
 
-    // 点击切换播放/暂停
+    const playRandom = () => {
+        const randomTrack = validMusic[Math.floor(Math.random() * validMusic.length)];
+        bgm.src = randomTrack;
+        bgm.play().then(() => musicIcon.innerText = "🔊").catch(() => {});
+    };
+
+    // 播放结束自动下一首（随机）
+    bgm.onended = playRandom;
+
     musicBtn.addEventListener('click', () => {
         if (bgm.paused) {
-            bgm.play().then(() => {
-                musicIcon.innerText = "🔊";
-            }).catch(err => console.log("播放被拦截"));
+            if (!bgm.src) playRandom(); else bgm.play().then(() => musicIcon.innerText = "🔊");
         } else {
             bgm.pause();
             musicIcon.innerText = "🔇";
@@ -82,21 +90,48 @@ function setupMusic() {
     });
 }
 
-function setupInteractions() {
-    const handleMove = (e) => {
-        const x = e.touches ? e.touches[0].clientX : e.clientX;
-        const y = e.touches ? e.touches[0].clientY : e.clientY;
-        mouseGlow.style.left = x + 'px';
-        mouseGlow.style.top = y + 'px';
-        mouseGlow.style.opacity = '1';
+function setupClock() {
+    const up = () => {
+        const n = new Date();
+        clockEl.innerText = n.toLocaleTimeString('zh-CN', { hour12: false });
+        dateEl.innerText = n.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' });
     };
-    window.addEventListener('mousemove', handleMove);
-    window.addEventListener('touchmove', handleMove, { passive: true });
+    up(); setInterval(up, 1000);
+}
+
+function setupParticles() {
+    const res = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    window.addEventListener('resize', res); res();
+    for (let i = 0; i < (cfg.particleCount || 80); i++) {
+        particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5, size: Math.random() * 2, opacity: Math.random() * 0.5 });
+    }
+    const anim = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+            if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+            ctx.fillStyle = `rgba(255,255,255,${p.opacity})`;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+        });
+        requestAnimationFrame(anim);
+    };
+    anim();
 }
 
 async function setupTexts() {
     let lines = [];
     try {
+        const r = await fetch('./texts.txt?v=' + Date.now());
+        lines = (await r.text()).split('\n').map(v => v.trim()).filter(Boolean);
+    } catch { lines = ['Ciallo']; }
+
+    setInterval(() => {
+        if (activeTextCount >= 20) return;
+        const div = document.createElement('div');
+        div.innerText = lines[Math.floor(Math.random() * lines.length)];
+        const dur = Math.random() * 15 + 10;
+        div.style.cssText = `position    try {
         const res = await fetch('./texts.txt?v=' + Date.now());
         const t = await res.text();
         lines = t.split('\n').map(v => v.trim()).filter(Boolean);
