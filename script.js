@@ -5,84 +5,95 @@ const canvas = document.getElementById('particleCanvas'), ctx = canvas.getContex
 const bgm = document.getElementById('bgm'), musicBtn = document.getElementById('musicControl'), musicIcon = document.getElementById('musicIcon');
 const mouseGlow = document.getElementById('mouseGlow');
 
-let cfg, particles = [], usingA = true, activeTextCount = 0;
+let cfg = { title: "青昱", subtitle: "Ciallo~", changeInterval: 20, particleCount: 80, musicVolume: 0.4 };
+let particles = [], usingA = true, activeTextCount = 0;
 let validImages = [], validMusic = [];
 
 async function init() {
+    // 1. 尝试加载配置，失败则使用内置默认值
     try {
-        const res = await fetch('./config.json?v=' + Date.now());
-        cfg = await res.json();
+        const res = await fetch('./config.json');
+        if (res.ok) cfg = Object.assign(cfg, await res.json());
+    } catch (e) { console.warn("Config fail, using defaults."); }
 
-        titleEl.innerText = cfg.title;
-        subEl.innerText = cfg.subtitle;
-        document.title = cfg.siteName;
-        document.getElementById('favicon').href = cfg.favicon;
+    titleEl.innerText = cfg.title;
+    subEl.innerText = cfg.subtitle;
 
-        // 自动化探测：探测 1, 2, 3...
-        validImages = await autoDetect('./images/', '.jpg', 50);
-        validMusic = await autoDetect('./music/', '.mp3', 20);
+    // 2. 自动化探测资源 (数字 1-20 循环)
+    validImages = await autoDetect('./images/', '.jpg', 20);
+    validMusic = await autoDetect('./music/', '.mp3', 20);
 
-        setupBackgrounds();
-        setupMusic();
-        setupClock();
-        setupParticles();
-        setupTexts();
-        setupInteractions();
-    } catch (e) { console.error("Init Error", e); }
+    // 3. 启动所有系统
+    setupBackgrounds();
+    setupMusic();
+    setupClock();
+    setupParticles();
+    setupTexts();
+    setupInteractions();
 }
 
-// 核心探测函数：尝试加载直到失败
 async function autoDetect(path, ext, max) {
     let list = [];
     for (let i = 1; i <= max; i++) {
         const url = `${path}${i}${ext}`;
-        const exists = await new Promise(resolve => {
-            if (ext === '.jpg') {
-                const img = new Image();
-                img.onload = () => resolve(true);
-                img.onerror = () => resolve(false);
-                img.src = url;
-            } else {
-                const audio = new Audio();
-                audio.oncanplaythrough = () => resolve(true);
-                audio.onerror = () => resolve(false);
-                audio.src = url;
-            }
-        });
-        if (exists) list.push(url); else break;
+        try {
+            const exists = await new Promise(resolve => {
+                if (ext === '.jpg') {
+                    const img = new Image();
+                    img.onload = () => resolve(true);
+                    img.onerror = () => resolve(false);
+                    img.src = url;
+                } else {
+                    const audio = new Audio();
+                    audio.onloadedmetadata = () => resolve(true);
+                    audio.onerror = () => resolve(false);
+                    audio.src = url;
+                }
+            });
+            if (exists) list.push(url); else break;
+        } catch (e) { break; }
     }
     return list;
 }
 
 function setupBackgrounds() {
-    if (validImages.length === 0) return;
+    if (validImages.length === 0) {
+        // 如果没图，显示一个保底色，防止黑屏
+        document.body.style.background = "#1a1a2e";
+        return;
+    }
     const change = (idx) => {
         const next = usingA ? bgB : bgA, curr = usingA ? bgA : bgB;
         next.src = validImages[idx % validImages.length];
-        next.onload = () => { next.classList.add('active'); curr.classList.remove('active'); usingA = !usingA; };
+        next.onload = () => {
+            next.classList.add('active');
+            curr.classList.remove('active');
+            usingA = !usingA;
+        };
     };
     change(0);
-    let i = 1;
-    setInterval(() => change(i++), (cfg.changeInterval || 20) * 1000);
+    let count = 1;
+    setInterval(() => change(count++), cfg.changeInterval * 1000);
 }
 
 function setupMusic() {
     if (validMusic.length === 0) return;
     musicBtn.style.display = 'flex';
-    bgm.volume = cfg.musicVolume || 0.4;
+    bgm.volume = cfg.musicVolume;
 
-    const playRandom = () => {
-        const randomTrack = validMusic[Math.floor(Math.random() * validMusic.length)];
-        bgm.src = randomTrack;
-        bgm.play().then(() => musicIcon.innerText = "🔊").catch(() => {});
+    const playNext = () => {
+        const track = validMusic[Math.floor(Math.random() * validMusic.length)];
+        bgm.src = track;
+        bgm.play().then(() => musicIcon.innerText = "🔊").catch(() => {
+            musicIcon.innerText = "🔇";
+        });
     };
 
-    // 播放结束自动下一首（随机）
-    bgm.onended = playRandom;
-
+    bgm.onended = playNext;
     musicBtn.addEventListener('click', () => {
         if (bgm.paused) {
-            if (!bgm.src) playRandom(); else bgm.play().then(() => musicIcon.innerText = "🔊");
+            if (!bgm.src) playNext(); else bgm.play();
+            musicIcon.innerText = "🔊";
         } else {
             bgm.pause();
             musicIcon.innerText = "🔇";
@@ -97,6 +108,37 @@ function setupClock() {
         dateEl.innerText = n.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' });
     };
     up(); setInterval(up, 1000);
+}
+
+function setupParticles() {
+    const res = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    window.addEventListener('resize', res); res();
+    for (let i = 0; i < cfg.particleCount; i++) {
+        particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5, size: Math.random() * 2, opacity: Math.random() * 0.5 });
+    }
+    const anim = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+            if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+            ctx.fillStyle = `rgba(255,255,255,${p.opacity})`;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+        });
+        requestAnimationFrame(anim);
+    };
+    anim();
+}
+
+async function setupTexts() {
+    let lines = ["Ciallo~", "你好世界", "这里是青昱"];
+    try {
+        const r = await fetch('./texts.txt');
+        if (r.ok) lines = (await r.text()).split('\n').filter(t => t.trim());
+    } catch (e) {}
+
+    setInterval(() => {
+            up(); setInterval(up, 1000);
 }
 
 function setupParticles() {
