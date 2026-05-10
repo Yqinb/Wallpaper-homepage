@@ -1,8 +1,3 @@
-/**
- * 青昱个人主页 - GitHub 全自动版 (支持多种后缀及大小写)
- * 逻辑：自动探测 1.jpg, 1.png, 2.JPG... 直到数字中断
- */
-
 const bgA = document.getElementById('bgA'), bgB = document.getElementById('bgB');
 const titleEl = document.getElementById('mainTitle'), subEl = document.getElementById('subTitle');
 const clockEl = document.getElementById('clock'), dateEl = document.getElementById('date');
@@ -10,49 +5,28 @@ const canvas = document.getElementById('particleCanvas'), ctx = canvas.getContex
 const bgm = document.getElementById('bgm'), musicBtn = document.getElementById('musicControl'), musicIcon = document.getElementById('musicIcon');
 const mouseGlow = document.getElementById('mouseGlow');
 
-// 支持的后缀列表（包含大小写，以应对 GitHub 环境）
+// 后缀穷举列表
 const IMAGE_EXTS = ['.jpg', '.JPG', '.png', '.PNG', '.webp', '.WEBP', '.jpeg', '.JPEG'];
-const MUSIC_EXTS = ['.mp3', '.MP3', '.m4a', '.M4A', '.ogg', '.OGG', '.wav', '.WAV'];
+const MUSIC_EXTS = ['.mp3', '.MP3', '.m4a', '.M4A', '.ogg', '.OGG'];
 
-let cfg = { 
-    title: "青昱", 
-    subtitle: "Ciallo~", 
-    changeInterval: 20, 
-    particleCount: 80, 
-    musicVolume: 0.4 
-};
-
+let cfg = { title: "青昱", subtitle: "Ciallo~", changeInterval: 20, particleCount: 80, musicVolume: 0.4 };
 let particles = [], usingA = true, activeTextCount = 0;
 let validImages = [], validMusic = [];
 
-/**
- * 初始化
- */
 async function init() {
     try {
-        // 尝试获取配置
         const res = await fetch('./config.json?v=' + Date.now());
-        if (res.ok) {
-            const remoteCfg = await res.json();
-            cfg = Object.assign(cfg, remoteCfg);
-        }
-    } catch (e) {
-        console.warn("未找到配置文件或格式错误，使用默认设置");
-    }
+        if (res.ok) Object.assign(cfg, await res.json());
+    } catch (e) { console.warn("Using default config"); }
 
-    // 设置基本文字
     titleEl.innerText = cfg.title;
     subEl.innerText = cfg.subtitle;
     document.title = cfg.siteName || cfg.title;
 
-    // 资源自动探测（最大尝试到 50，遇到中断自动停止）
-    validImages = await smartDetect('./images/', 'image', 50);
-    validMusic = await smartDetect('./music/', 'audio', 30);
+    // 探测资源
+    validImages = await smartDetect('./images/', 'image', 30);
+    validMusic = await smartDetect('./music/', 'audio', 15);
 
-    console.log("成功加载图片:", validImages);
-    console.log("成功加载音乐:", validMusic);
-
-    // 启动各模块
     setupBackgrounds();
     setupMusic();
     setupClock();
@@ -61,20 +35,11 @@ async function init() {
     setupInteractions();
 }
 
-/**
- * 智能探测函数
- * @param {string} path 路径 
- * @param {string} type 类型 
- * @param {number} max 最大探测数字
- */
 async function smartDetect(path, type, max) {
     let results = [];
     const exts = type === 'image' ? IMAGE_EXTS : MUSIC_EXTS;
-
     for (let i = 1; i <= max; i++) {
         let found = false;
-        
-        // 每个数字都尝试所有后缀
         for (const ext of exts) {
             const url = `${path}${i}${ext}`;
             const isExist = await new Promise(resolve => {
@@ -85,18 +50,85 @@ async function smartDetect(path, type, max) {
                     img.src = url;
                 } else {
                     const audio = new Audio();
-                    // 仅探测元数据，不下载全曲，提高效率
                     audio.onloadedmetadata = () => resolve(true);
                     audio.onerror = () => resolve(false);
                     audio.src = url;
                 }
             });
+            if (isExist) { results.push(url); found = true; break; }
+        }
+        if (!found) break;
+    }
+    return results;
+}
 
-            if (isExist) {
-                results.push(url);
-                found = true;
-                break; // 找到当前数字的一个有效文件，跳过其他后缀尝试
-            }
+function setupBackgrounds() {
+    if (validImages.length === 0) return;
+    const change = (idx) => {
+        const next = usingA ? bgB : bgA, curr = usingA ? bgA : bgB;
+        const temp = new Image();
+        temp.src = validImages[idx % validImages.length];
+        temp.onload = () => {
+            next.src = temp.src;
+            next.classList.add('active');
+            curr.classList.remove('active');
+            usingA = !usingA;
+        };
+    };
+    change(0);
+    setInterval(() => change(Math.floor(Math.random() * validImages.length)), cfg.changeInterval * 1000);
+}
+
+function setupMusic() {
+    if (validMusic.length === 0) return;
+    
+    // 探测到音乐后才显示按钮
+    musicBtn.style.display = 'flex';
+    bgm.volume = cfg.musicVolume;
+
+    const playRandom = () => {
+        const track = validMusic[Math.floor(Math.random() * validMusic.length)];
+        bgm.src = track;
+        bgm.play().then(() => musicIcon.innerText = "🔊").catch(() => {
+            musicIcon.innerText = "🔇"; // 被拦截时显示静音态
+        });
+    };
+
+    bgm.onended = playRandom;
+    musicBtn.addEventListener('click', () => {
+        if (bgm.paused) {
+            if (!bgm.src) playRandom(); else bgm.play();
+            musicIcon.innerText = "🔊";
+        } else {
+            bgm.pause();
+            musicIcon.innerText = "🔇";
+        }
+    });
+}
+
+function setupClock() {
+    const up = () => {
+        const n = new Date();
+        clockEl.innerText = n.toLocaleTimeString('zh-CN', { hour12: false });
+        dateEl.innerText = n.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' });
+    };
+    up(); setInterval(up, 1000);
+}
+
+function setupParticles() {
+    const res = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    window.addEventListener('resize', res); res();
+    for (let i = 0; i < cfg.particleCount; i++) {
+        particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4, size: Math.random() * 2, opacity: Math.random() * 0.5 });
+    }
+    const anim = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+            if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+            ctx.fillStyle = `rgba(255,255,255,${p.opacity})`;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fil            }
         }
         
         // 如果某个数字（比如 2）尝试了所有后缀都没找到，说明后续可能没有了，停止搜索
