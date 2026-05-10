@@ -189,12 +189,12 @@ body {
 
 .title {
     max-width: 95vw;
-
-    white-space: nowrap;
-
+    white-space: nowrap;      /* 保留单行 */
     overflow: hidden;
-
-    text-overflow: clip;
+    text-overflow: clip;      /* 可改为 ellipsis 更友好 */
+    
+    /* 添加响应式字号：最小20px，理想6vw，最大56px */
+    font-size: clamp(20px, 6vw, 56px);
 
     font-weight: 900;
 
