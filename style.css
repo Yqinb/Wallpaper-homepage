@@ -377,7 +377,14 @@ body {
 
 /* 手机端微调 */
 @media (max-width: 768px) {
-    .hud { top: 20px; right: 0; width: 100%; text-align: center; }
-    .music-btn { bottom: 30px; right: 30px; width: 48px; height: 48px; }
-    .main { padding: 0 5vw; }
+  .hud {
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: auto;
+    right: auto;
+    width: auto;
+    max-width: 90vw;
+    text-align: center;
+  }
 }
