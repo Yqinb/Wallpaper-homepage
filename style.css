@@ -1,102 +1,97 @@
-:root {
-    --bg-transition-time: 1.8s;
-}
-
+/* 基础重置 */
 * {
-    margin: 0;
-    padding: 0;
+    margin: 0; padding: 0;
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
 }
 
 html, body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden; /* 禁止任何形式的滚动 */
-    background: #0a0a0a;
-    font-family: -apple-system, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    width: 100%; height: 100%;
+    overflow: hidden; /* 严禁滚动条 */
+    background: #0a0a0a; /* 黑色底色 */
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
     color: #fff;
     touch-action: none;
 }
 
-/* 壁纸层 */
+/* 背景图层 */
 .wallpaper {
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    object-fit: cover; opacity: 0;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; /* 自动裁剪填充屏幕 */
+    opacity: 0;
     transition: opacity var(--bg-transition-time) ease-in-out;
     z-index: 0;
 }
 .wallpaper.active { opacity: 1; }
 
-/* 装饰层 */
-.overlay, .vignette, .beam {
+/* 装饰遮罩 */
+.overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.4) 100%);
     pointer-events: none; z-index: 1;
 }
-.overlay { background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.5) 100%); }
-.vignette { box-shadow: inset 0 0 150px rgba(0,0,0,0.9); }
-.beam { background: radial-gradient(ellipse at center, transparent 0%, rgba(255,255,255,0.03) 100%); }
 
+/* 画布与文字雨 */
 #particleCanvas { position: fixed; top: 0; left: 0; z-index: 2; pointer-events: none; }
 #textRain { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
 
-/* 内容容器 */
+/* 主内容容器 */
 .main {
-    position: relative;
-    z-index: 5;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 0 5vw; /* 留出左右边距 */
+    position: relative; z-index: 5;
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    padding: 0 5vw;
 }
 
-/* 主标题：尽量大，严禁换行，严禁溢出 */
+/* 主标题：核心保护 */
 .title {
-    white-space: nowrap;
+    white-space: nowrap; /* 绝对不换行 */
     font-weight: 900;
-    /* 动态计算字号：最小30px，随屏幕宽度变化，最大90px */
-    font-size: clamp(30px, 15vw, 90px); 
-    max-width: 90vw; /* 限制宽度为屏幕的90% */
+    max-width: 95vw; /* 限制宽度，防止溢出 */
     overflow: hidden;
-    text-overflow: clip; /* 即使溢出也不要换行 */
+    text-overflow: clip;
     background: linear-gradient(270deg, #ff6ec7, #ffb86b, #fff56b, #7cffb2, #59d9ff, #c17cff, #ff6ec7);
     background-size: 400% 100%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 15px rgba(255, 120, 220, 0.4));
     animation: rainbow 8s linear infinite, floating 4s ease-in-out infinite;
 }
 
-/* 副标题：变大一点，严禁换行 */
+/* 副标题 */
 .subtitle {
     margin-top: 15px;
-    white-space: nowrap;
-    /* 确保副标题比主标题小，同时保证可见性 */
-    font-size: clamp(16px, 4vw, 24px); 
-    max-width: 85vw;
+    white-space: nowrap; /* 不换行 */
+    max-width: 90vw;
     overflow: hidden;
-    opacity: 0.85;
-    letter-spacing: 3px;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    opacity: 0.8;
+    letter-spacing: 2px;
 }
 
-/* HUD & 按钮 */
-.hud {
-    position: fixed; top: 40px; right: 40px;
-    z-index: 6; text-align: right;
-}
-#clock { font-size: 32px; font-weight: 800; font-family: monospace; }
-#date { font-size: 14px; opacity: 0.6; }
-
+/* 右下角音乐按钮 */
 .music-btn {
-    position: fixed; bottom: 40px; right: 40px;
+    position: fixed; bottom: 30px; right: 30px;
     z-index: 100; width: 50px; height: 50px;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    border-radius: 50%;
+    display: none; /* 有音乐才显示 */
+    align-items: center; justify-content: center;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* 关键帧动画 */
+@keyframes rainbow { 0% { background-position: 0%; } 100% { background-position: 400%; } }
+@keyframes floating { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes textFall {
+    0% { transform: translateY(-100px); opacity: 0; }
+    15% { opacity: var(--text-op); }
+    85% { opacity: var(--text-op); }
+    100% { transform: translateY(110vh); opacity: 0; }
+}    background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     border-radius: 50%; display: flex; align-items: center; justify-content: center;
     cursor: pointer; border: 1.5px solid rgba(255, 255, 255, 0.3);
