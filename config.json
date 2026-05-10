@@ -1,33 +1,26 @@
 {
-  "siteName": "青昱",
-
+  "siteName": "青昱个人主页",
   "title": "Ciallo～(∠・ω＜)⌒☆",
+  "subtitle": "✨ 在群星闪烁的夜晚与你相遇 ✨",
+  "favicon": "./assets/my_icon.ico",
 
-  "subtitle": "✨ vvvvvvvvv ✨",
+  "changeMode": "interval",
+  "changeInterval": 15,
+  "transitionSpeed": 2.0,
 
-  "favicon": "./icons/favicon.png",
+  "particleCount": 80,
+  "textAmount": 25,
+  "textSpeedMin": 12,
+  "textSpeedMax": 25,
+  "textSpawnRate": 1200,
 
-  "changeMode": "daily",
-
-  "changeInterval": 300,
-
-  "particleCount": 120,
-
-  "textAmount": 40,
-
-  "textSpeedMin": 10,
-
-  "textSpeedMax": 28,
-
-  "enableMusic": false,
-
-  "music": "./music/bgm.mp3",
-
-  "musicVolume": 0.35,
+  "enableMusic": true,
+  "musicPath": "./assets/main_theme.mp3",
+  "musicVolume": 0.4,
 
   "images": [
-    "./images/1.png",
-    "./images/2.jpg",
-    "./images/3.jpg"
+    "./assets/bg_spring.png",
+    "./assets/summer_vibes.jpg",
+    "https://api.paugram.com/wallpaper/" 
   ]
 }
