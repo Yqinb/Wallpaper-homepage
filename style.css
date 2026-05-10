@@ -1,30 +1,153 @@
-:root { --bg-transition-time: 1.8s; }
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0a; font-family: -apple-system, "Helvetica Neue", sans-serif; color: #fff; touch-action: none; }
+:root {
+    --bg-transition-time: 1.8s;
+}
 
-.wallpaper { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity var(--bg-transition-time) ease-in-out; z-index: 0; }
-.wallpaper.active { opacity: 1; }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
 
-.overlay, .vignette, .beam { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #0a0a0a; /* 基础底色，防止闪烁 */
+    font-family: -apple-system, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    color: #fff;
+    touch-action: none;
+}
+
+/* 壁纸容器 */
+.wallpaper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity var(--bg-transition-time) ease-in-out;
+    z-index: 0;
+}
+
+.wallpaper.active {
+    opacity: 1;
+}
+
+/* 遮罩特效层 */
+.overlay, .vignette, .beam {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
 .overlay { background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.5) 100%); }
 .vignette { box-shadow: inset 0 0 150px rgba(0,0,0,0.9); }
-.beam { background: radial-gradient(ellipse at center, transparent 0%, rgba(255,255,255,0.02) 100%); }
+.beam { background: radial-gradient(ellipse at center, transparent 0%, rgba(255,255,255,0.03) 100%); }
 
+/* 画布与文字雨 */
 #particleCanvas { position: fixed; top: 0; left: 0; z-index: 2; pointer-events: none; }
 #textRain { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
 
-.main { position: relative; z-index: 5; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
-.title { font-size: clamp(36px, 10vw, 120px); font-weight: 900; background: linear-gradient(270deg, #ff6ec7, #ffb86b, #fff56b, #7cffb2, #59d9ff, #c17cff, #ff6ec7); background-size: 400% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: rainbow 8s linear infinite, floating 4s ease-in-out infinite; }
-.subtitle { margin-top: 15px; font-size: clamp(14px, 3vw, 24px); opacity: 0.7; letter-spacing: 4px; }
+/* 主内容区 */
+.main {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0 10vw;
+}
 
-.hud { position: fixed; top: 30px; right: 30px; z-index: 6; text-align: right; }
-#clock { font-size: 32px; font-weight: 800; font-family: monospace; }
-#date { font-size: 14px; opacity: 0.5; }
+.title {
+    /* 核心：强制不换行 */
+    white-space: nowrap;
+    font-weight: 900;
+    /* 响应式缩放，防止溢出屏幕 */
+    font-size: clamp(30px, 12vw, 100px);
+    background: linear-gradient(270deg, #ff6ec7, #ffb86b, #fff56b, #7cffb2, #59d9ff, #c17cff, #ff6ec7);
+    background-size: 400% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 15px rgba(255, 120, 220, 0.4));
+    animation: rainbow 8s linear infinite, floating 4s ease-in-out infinite;
+}
 
-.music-btn { position: fixed; bottom: 30px; right: 30px; z-index: 10; width: 50px; height: 50px; background: rgba(0,0,0,0.3); backdrop-filter: blur(10px); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); }
+.subtitle {
+    margin-top: 20px;
+    font-size: clamp(14px, 3.5vw, 22px);
+    opacity: 0.8;
+    letter-spacing: 5px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
 
-.mouseGlow { position: fixed; width: 250px; height: 250px; background: radial-gradient(circle, rgba(255,255,255,0.08), transparent 70%); border-radius: 50%; pointer-events: none; z-index: 4; transform: translate(-50%, -50%); }
+/* 时钟 HUD */
+.hud {
+    position: fixed;
+    top: 40px;
+    right: 40px;
+    z-index: 6;
+    text-align: right;
+}
+#clock { font-size: 36px; font-weight: 800; font-family: monospace; }
+#date { font-size: 14px; opacity: 0.6; margin-top: 5px; }
 
+/* 音乐控制按钮 - 重点修复 */
+.music-btn {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    z-index: 100; /* 确保在最顶层 */
+    width: 56px;
+    height: 56px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 50%;
+    display: flex; /* 由 JS 切换为 flex */
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.music-btn:active { transform: scale(0.9); }
+.music-btn span { font-size: 24px; }
+
+/* 交互光晕 */
+.mouseGlow {
+    position: fixed;
+    width: 250px; height: 250px;
+    background: radial-gradient(circle, rgba(255,255,255,0.1), transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 4;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+/* 动画定义 */
 @keyframes rainbow { 0% { background-position: 0%; } 100% { background-position: 400%; } }
 @keyframes floating { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-@keyframes textFall { 0% { transform: translateY(-50px); opacity: 0; } 10% { opacity: 0.5; } 90% { opacity: 0.5; } 100% { transform: translateY(110vh); opacity: 0; } }
+@keyframes textFall {
+    0% { transform: translateY(-50px); opacity: 0; }
+    15% { opacity: 0.5; }
+    85% { opacity: 0.5; }
+    100% { transform: translateY(105vh); opacity: 0; }
+}
+
+/* 手机端微调 */
+@media (max-width: 768px) {
+    .hud { top: 20px; right: 0; width: 100%; text-align: center; }
+    .music-btn { bottom: 30px; right: 30px; width: 48px; height: 48px; }
+    .main { padding: 0 5vw; }
+}
