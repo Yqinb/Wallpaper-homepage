@@ -1,102 +1,67 @@
-/* 基础重置 */
 * {
-    margin: 0; padding: 0;
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
 }
 
-html, body {
-    width: 100%; height: 100%;
-    overflow: hidden; /* 严禁滚动条 */
-    background: #0a0a0a; /* 黑色底色 */
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #0a0a0a;
     font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
     color: #fff;
-    touch-action: none;
 }
 
-/* 背景图层 */
 .wallpaper {
     position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    object-fit: cover; /* 自动裁剪填充屏幕 */
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
     opacity: 0;
-    transition: opacity var(--bg-transition-time) ease-in-out;
+
+    transition: opacity var(--bg-transition-time, 1.8s) ease-in-out;
+
     z-index: 0;
 }
-.wallpaper.active { opacity: 1; }
 
-/* 装饰遮罩 */
+.wallpaper.active {
+    opacity: 1;
+}
+
 .overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.4) 100%);
-    pointer-events: none; z-index: 1;
+    position: fixed;
+    inset: 0;
+
+    background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.45) 100%);
+
+    pointer-events: none;
+
+    z-index: 1;
 }
 
-/* 画布与文字雨 */
-#particleCanvas { position: fixed; top: 0; left: 0; z-index: 2; pointer-events: none; }
-#textRain { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
+.vignette {
+    position: fixed;
+    inset: 0;
 
-/* 主内容容器 */
-.main {
-    position: relative; z-index: 5;
-    width: 100%; height: 100%;
-    display: flex; flex-direction: column;
-    justify-content: center; align-items: center;
-    padding: 0 5vw;
+    background: radial-gradient(circle at center, transparent 50%, rgba(0,0,0,0.35) 100%);
+
+    pointer-events: none;
+
+    z-index: 1;
 }
 
-/* 主标题：核心保护 */
-.title {
-    white-space: nowrap; /* 绝对不换行 */
-    font-weight: 900;
-    max-width: 95vw; /* 限制宽度，防止溢出 */
-    overflow: hidden;
-    text-overflow: clip;
-    background: linear-gradient(270deg, #ff6ec7, #ffb86b, #fff56b, #7cffb2, #59d9ff, #c17cff, #ff6ec7);
-    background-size: 400% 100%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: rainbow 8s linear infinite, floating 4s ease-in-out infinite;
-}
+#particleCanvas {
+    position: fixed;
+    inset: 0;
 
-/* 副标题 */
-.subtitle {
-    margin-top: 15px;
-    white-space: nowrap; /* 不换行 */
-    max-width: 90vw;
-    overflow: hidden;
-    opacity: 0.8;
-    letter-spacing: 2px;
-}
-
-/* 右下角音乐按钮 */
-.music-btn {
-    position: fixed; bottom: 30px; right: 30px;
-    z-index: 100; width: 50px; height: 50px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(8px);
-    border-radius: 50%;
-    display: none; /* 有音乐才显示 */
-    align-items: center; justify-content: center;
-    cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* 关键帧动画 */
-@keyframes rainbow { 0% { background-position: 0%; } 100% { background-position: 400%; } }
-@keyframes floating { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-@keyframes textFall {
-    0% { transform: translateY(-100px); opacity: 0; }
-    15% { opacity: var(--text-op); }
-    85% { opacity: var(--text-op); }
-    100% { transform: translateY(110vh); opacity: 0; }
-}    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; border: 1.5px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: 0.3s;
-}
+}}
 .music-btn:active { transform: scale(0.9); }
 
 .mouseGlow {
