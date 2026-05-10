@@ -171,50 +171,63 @@ function setupMusic() {
 
     musicBtn.style.display = 'flex';
 
-    bgm.volume = cfg.musicVolume;
+    bgm.volume = cfg.musicVolume || 0.4;
 
-    const playRandom = () => {
+    const playRandom = async () => {
 
-        bgm.src = validMusic[
-            Math.floor(Math.random() * validMusic.length)
-        ];
+        try {
 
-        bgm.play()
-            .then(() => {
-                musicIcon.innerText = '🔊';
-            })
-            .catch(() => {
-                musicIcon.innerText = '🔇';
-            });
-    };
+            bgm.src = validMusic[
+                Math.floor(Math.random() * validMusic.length)
+            ];
 
-    bgm.onended = playRandom;
-
-    document.body.addEventListener('click', () => {
-
-        if (!bgm.src) {
-            playRandom();
-        }
-
-    }, { once: true });
-
-    musicBtn.addEventListener('click', () => {
-
-        if (bgm.paused) {
-
-            if (!bgm.src) {
-                playRandom();
-            } else {
-                bgm.play();
-            }
+            await bgm.play();
 
             musicIcon.innerText = '🔊';
 
-        } else {
+        } catch (e) {
 
-            bgm.pause();
+            console.error('音乐播放失败:', e);
 
-            musicIcon.innerText = '🔇';
+            musicIcon.innerText = '❌';
+        }
+    };
+
+    // 自动下一首
+    bgm.onended = playRandom;
+
+    // 点击按钮控制播放
+    musicBtn.addEventListener('click', async () => {
+
+        try {
+
+            // 第一次播放
+            if (!bgm.src) {
+
+                await playRandom();
+
+                return;
+            }
+
+            // 暂停状态
+            if (bgm.paused) {
+
+                await bgm.play();
+
+                musicIcon.innerText = '🔊';
+
+            } else {
+
+                bgm.pause();
+
+                musicIcon.innerText = '🔇';
+            }
+
+        } catch (e) {
+
+            console.error('按钮播放失败:', e);
+
+            musicIcon.innerText = '❌';
         }
     });
 }
