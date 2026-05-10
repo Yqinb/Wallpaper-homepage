@@ -3,34 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>青昱 - 个人主页</title>
-    <link id="favicon" rel="icon" href="./favicon.ico">
+    <title>正在加载...</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <img id="bgA" class="wallpaper active">
-    <img id="bgB" class="wallpaper">
+
+    <img id="bgA" class="wallpaper active" src="" alt="">
+    <img id="bgB" class="wallpaper" src="" alt="">
 
     <div class="overlay"></div>
     <div class="vignette"></div>
-    <div class="beam"></div>
 
     <canvas id="particleCanvas"></canvas>
     <div id="textRain"></div>
 
-    <div class="hud">
-        <div id="clock">--:--:--</div>
-        <div id="date">----年--月--日</div>
-    </div>
+    <div id="mouseGlow" class="mouseGlow"></div>
 
     <div class="main">
-        <div id="mainTitle" class="title">正在初始化</div>
-        <div id="subTitle" class="subtitle">Please wait...</div>
+        <h1 id="mainTitle" class="title">正在初始化</h1>
+        <p id="subTitle" class="subtitle">请稍候...</p>
     </div>
 
-    <div class="mouseGlow" id="mouseGlow"></div>
-    
-    <div id="musicControl" class="music-btn" style="display: none;">
+    <div class="hud">
+        <div id="clock">00:00:00</div>
+        <div id="date">1月1日 星期一</div>
+    </div>
+
+    <div id="musicControl" class="music-btn">
         <span id="musicIcon">🔇</span>
     </div>
 
