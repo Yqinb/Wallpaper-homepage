@@ -53,7 +53,7 @@ const CONFIG = {
     avatarGlow: true,
 
     // 大标题（主标题），显示在头像下方
-    bigTitle: "你好，欢迎来到我的主页",
+    bigTitle: "Ciallo～(∠・ω< )⌒★",
 
     // 小标题（副标题）。开启打字机后，这里作为"第一句"展示
     subtitle: "记录生活 · 分享热爱 · 保持好奇",
@@ -94,7 +94,7 @@ const CONFIG = {
     text: "© 2026 Your Name · 用 ❤ 搭建的个人主页",
 
     // 是否显示页脚区域（文字 + 社交链接一起控制）
-    enabled: true,
+    enabled: false,
 
     // 社交链接列表：图标 + 名称 + 链接
     // icon 可选值（内置图标，直接写名字即可）：
@@ -323,7 +323,7 @@ const CONFIG = {
    * ======================================================================= */
   showcase: {
     // 是否开启展示栏：false 时整个区域隐藏
-    enabled: true,
+    enabled: false,
 
     // 展示栏标题（显示在展示栏顶部，留空则不显示标题）
     title: "我的精选",
@@ -490,7 +490,7 @@ const CONFIG = {
   weather: {
     // 是否开启天气组件
     // 注意：若开启但 apiKey 留空，组件会自动隐藏（不会报错）
-    enabled: false,
+    enabled: true,
 
     // 天气服务商：
     //   "qweather"     = 和风天气（国内推荐）
