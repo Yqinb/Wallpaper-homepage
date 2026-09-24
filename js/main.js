@@ -453,7 +453,11 @@
     const listEl = $('engineList');
     const input = $('searchInput');
 
-    form.style.width = get('search.width', '560px');
+    // 宽度处理：以父容器 100% 为基准，配置里的值作为 max-width。
+    // 若直接写 style.width = "560px"，内联样式优先级高于媒体查询中的 width:100%，
+    // 窄屏下会把搜索栏撑出屏幕并产生横向滚动条。
+    form.style.width = '100%';
+    form.style.maxWidth = get('search.width', '560px');
     input.placeholder = get('search.placeholder', '搜索…');
 
     // 默认引擎（找不到就退化为第一个）
