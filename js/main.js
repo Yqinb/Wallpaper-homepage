@@ -522,9 +522,16 @@
     }
     renderList();
 
-    // 下拉开合
+    // 下拉开合：强制菜单始终从搜索框下方展开，避免旧 CSS / 浏览器缓存影响
+    function placeEngineList() {
+      listEl.style.top = 'calc(100% + 10px)';
+      listEl.style.bottom = 'auto';
+    }
+    placeEngineList();
+
     $('engineCurrent').addEventListener('click', function (e) {
       e.stopPropagation();
+      placeEngineList();
       wrap.classList.toggle('is-open');
     });
     document.addEventListener('click', function () { wrap.classList.remove('is-open'); });
