@@ -169,65 +169,99 @@
    * 04 背景系统（固定 / 随机 / 顺序轮播 + 淡入淡出）
    * ======================================================================= */
   function initBackground() {
-    const images = get('background.images', []);
-    if (!images.length) return;
-
+    const localImages = get('background.images', []);
+    const wp = get('wallpaper', {});
+    const useRemote = wp.enabled && wp.source === 'picsum';
     const bgEl = $('bg');
     const imgA = $('bgA');
     const imgB = $('bgB');
     const mask = $('bgMask');
-    const mode = get('background.mode', 'fixed');
-    const fade = get('background.fadeDuration', 1400);
+    if (!bgEl || !imgA || !imgB || !mask) return;
 
-    // 模糊与亮度：作用在背景容器上，配合轻微放大隐藏模糊边缘
+    const fade = get('wallpaper.fadeDuration', get('background.fadeDuration', 1400));
     bgEl.style.filter = 'blur(' + get('background.blur', '0px') + ') brightness(' + get('background.brightness', 1) + ')';
     bgEl.style.transform = 'scale(1.06)';
     mask.style.background = get('background.maskColor', 'rgba(8,12,24,0.35)');
-
     if (get('background.zoomAnimation', true)) bgEl.classList.add('has-zoom');
-
     imgA.style.transitionDuration = fade + 'ms';
     imgB.style.transitionDuration = fade + 'ms';
 
     let showingA = true;
-    let curIdx = 0;
+    let localIndex = 0;
+    let remoteSeed = Date.now();
 
-    /** 应用一张背景到隐藏层，然后交叉淡入 */
-    function apply(url) {
+    function localUrl() {
+      if (!localImages.length) return '';
+      const mode = get('background.mode', 'fixed');
+      if (mode === 'random' && localImages.length > 1) {
+        let i = localIndex;
+        while (i === localIndex) i = Math.floor(Math.random() * localImages.length);
+        localIndex = i;
+      } else if (mode === 'sequence') {
+        localIndex = (localIndex + 1) % localImages.length;
+      }
+      return localImages[localIndex];
+    }
+
+    function remoteUrl() {
+      const w = Math.max(320, parseInt(wp.width, 10) || 1920);
+      const h = Math.max(240, parseInt(wp.height, 10) || 1080);
+      remoteSeed += 1;
+      return 'https://picsum.photos/' + w + '/' + h + '?random=' + remoteSeed;
+    }
+
+    function swap(url, fallback) {
+      if (!url) return;
       const next = showingA ? imgB : imgA;
       const cur = showingA ? imgA : imgB;
-      next.style.backgroundImage = 'url("' + url + '")';
-      // 强制重排，保证 transition 生效
-      void next.offsetWidth;
-      next.classList.add('is-active');
-      cur.classList.remove('is-active');
-      showingA = !showingA;
+      const probe = new Image();
+      probe.onload = function () {
+        next.style.backgroundImage = 'url("' + url.replace(/"/g, '%22') + '")';
+        void next.offsetWidth;
+        next.classList.add('is-active');
+        cur.classList.remove('is-active');
+        showingA = !showingA;
+      };
+      probe.onerror = function () {
+        if (fallback && localImages.length) swap(localUrl(), false);
+      };
+      probe.src = url;
     }
 
-    /** 按模式取出下一张图的下标 */
-    function nextIndex() {
-      if (mode === 'random') {
-        if (images.length === 1) return 0;
-        let i = curIdx;
-        while (i === curIdx) i = Math.floor(Math.random() * images.length);
-        return i;
+    // 首屏：远程壁纸优先；失败时回退到本地背景。
+    if (useRemote) {
+      const first = remoteUrl();
+      const firstProbe = new Image();
+      firstProbe.onload = function () {
+        imgA.style.backgroundImage = 'url("' + first.replace(/"/g, '%22') + '")';
+        imgA.classList.add('is-active');
+      };
+      firstProbe.onerror = function () {
+        const local = localImages.length ? localImages[0] : '';
+        if (local) imgA.style.backgroundImage = 'url("' + local + '")';
+      };
+      firstProbe.src = first;
+
+      if (get('wallpaper.interval', 0) > 0) {
+        setInterval(function () {
+          if (document.hidden) return;
+          swap(remoteUrl(), get('wallpaper.fallbackToLocal', true));
+        }, Math.max(30000, get('wallpaper.interval', 600000)));
       }
-      if (mode === 'sequence') return (curIdx + 1) % images.length;
-      return curIdx;   // fixed
-    }
+    } else if (localImages.length) {
+      const first = get('background.mode', 'fixed') === 'random'
+        ? localImages[Math.floor(Math.random() * localImages.length)]
+        : localImages[0];
+      imgA.style.backgroundImage = 'url("' + first + '")';
+      imgA.classList.add('is-active');
 
-    function tick() {
-      curIdx = nextIndex();
-      apply(images[curIdx]);
-    }
-
-    // 首屏：fixed 用第一张；random 随机一张；sequence 用第一张
-    if (mode === 'random') curIdx = Math.floor(Math.random() * images.length);
-    imgA.style.backgroundImage = 'url("' + images[curIdx] + '")';
-
-    // 轮播：多张图且非 fixed 模式时才启动定时器
-    if (mode !== 'fixed' && images.length > 1) {
-      setInterval(tick, Math.max(2000, get('background.interval', 12000)));
+      const mode = get('background.mode', 'fixed');
+      if (mode !== 'fixed' && localImages.length > 1) {
+        setInterval(function () {
+          if (document.hidden) return;
+          swap(localUrl(), false);
+        }, Math.max(2000, get('background.interval', 12000)));
+      }
     }
   }
 
@@ -1192,7 +1226,7 @@
     initSEO();
 
     const bgImages = get('background.images', []);
-    const needPreload = get('background.preload', true);
+    const needPreload = get('background.preload', true) && !get('wallpaper.enabled', false);
     const minDur = get('extra.loading.minDuration', 800);
     const startedAt = Date.now();
 
