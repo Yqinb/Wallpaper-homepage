@@ -125,3 +125,62 @@ body{background:#08090d}
 .pbtn{width:32px;height:32px;border-radius:9px}.pbtn-play{width:38px;height:38px}
 .track-name{font-size:10px}.spectrum{height:12px;opacity:.4}
 @media(max-width:768px){.page{padding:48px 16px 110px;gap:22px}.avatar{width:92px;height:92px}.big-title{font-size:28px}.search{margin-top:8px}.player{width:calc(100% - 14px);bottom:8px}.range-vol{display:none}}
+
+
+/* =========================
+ * final polish
+ * ========================= */
+
+/* 搜索引擎菜单：统一向下展开 */
+.engine-list{
+  top:calc(100% + 10px);
+  bottom:auto;
+  transform:translateY(-8px) scale(.97);
+}
+.engine.is-open .engine-list{
+  transform:none;
+}
+
+/* 加载点补全：轻微呼吸，不抢画面 */
+.loader-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--primary);
+  box-shadow:0 0 22px var(--primary);
+  animation:loaderPulse 1.2s ease-in-out infinite;
+}
+@keyframes loaderPulse{
+  0%,100%{transform:scale(.72);opacity:.42}
+  50%{transform:scale(1);opacity:1}
+}
+
+/* 搜索框更轻一点，减少“卡片感” */
+.search{
+  box-shadow:0 22px 70px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.06);
+}
+.search:focus-within{
+  transform:translateY(-1px);
+}
+
+/* 壁纸是主角，内容层保持克制 */
+.hero:before{
+  opacity:.75;
+}
+.info-row{
+  opacity:.9;
+}
+.footer{
+  opacity:.9;
+}
+
+/* 手机端菜单不要离搜索框太远 */
+@media(max-width:768px){
+  .engine-list{
+    top:calc(100% + 7px);
+    max-height:42vh;
+  }
+  .search{
+    box-shadow:0 18px 50px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.06);
+  }
+}
