@@ -1,111 +1,39 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#070a13">
-<meta name="color-scheme" content="dark">
-<title>我的主页</title>
-<link rel="icon" href="assets/avatar/avatar.png">
-<link rel="stylesheet" href="css/style.css">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#08090d"><meta name="color-scheme" content="dark">
+<title>我的主页</title><link rel="icon" href="assets/avatar/avatar.png"><link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div class="loader" id="loader"><div class="loader-box"><div class="loader-ring"></div><div class="loader-text">LOADING</div></div></div>
-<div class="bg" id="bg">
-  <div class="bg-img is-active" id="bgA"></div>
-  <div class="bg-img" id="bgB"></div>
-  <div class="bg-mask" id="bgMask"></div>
-  <div class="bg-grain"></div>
-</div>
-<canvas class="fx-canvas" id="fxParticles"></canvas>
-<canvas class="fx-canvas" id="fxCursor"></canvas>
-<canvas class="fx-canvas" id="fxClick"></canvas>
-
-<main class="page" id="page">
-  <div class="ambient-label ambient-label-left">PERSONAL SPACE</div>
-  <div class="ambient-label ambient-label-right">STATIC / FRONTEND</div>
-
-  <div class="slot" id="slotAbove"></div>
-
-  <section class="hero">
-    <div class="hero-index">01 / HOME</div>
-    <div class="avatar-wrap" id="avatarWrap">
-      <span class="avatar-ring"></span>
-      <img class="avatar" id="avatar" alt="头像">
-    </div>
-
-    <h1 class="big-title" id="bigTitle"></h1>
-    <p class="subtitle"><span id="typewriter"></span><i class="caret" id="caret">|</i></p>
-
-    <div class="info-row">
-      <span class="chip" id="greeting"></span>
-      <span class="chip" id="clock"></span>
-      <span class="chip" id="weather"></span>
-    </div>
-
-    <p class="hitokoto" id="hitokoto"></p>
-
-    <form class="search" id="searchForm">
-      <div class="engine" id="engineWrap">
-        <button type="button" class="engine-current" id="engineCurrent" aria-label="选择搜索引擎">
-          <span class="engine-mark">⌁</span>
-          <span id="engineName">搜索</span>
-          <svg viewBox="0 0 24 24" class="ico-chev"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <ul class="engine-list" id="engineList"></ul>
-      </div>
-      <input class="search-input" id="searchInput" type="search" placeholder="搜索任何你感兴趣的东西…" autocomplete="off">
-      <span class="search-key">⌘ K</span>
-      <button class="search-btn" type="submit" aria-label="搜索">
-        <svg viewBox="0 0 24 24" class="ico-search"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
-      </button>
-    </form>
-
-    <div class="hero-meta">
-      <span>TYPE <b>PERSONAL</b></span>
-      <i></i>
-      <span>MODE <b>STATIC</b></span>
-      <i></i>
-      <span>PRESS <b>/</b> TO SEARCH</span>
-    </div>
-  </section>
-
-  <div class="section-line"><span>SELECTED</span><i></i><span>02</span></div>
-  <div class="slot slot-showcase" id="slotBelow"></div>
-  <div class="slot" id="slotBottom"></div>
-
-  <footer class="footer" id="footer">
-    <div class="social" id="social"></div>
-    <p class="footer-text" id="footerText"></p>
-    <p class="visit" id="visitCount"></p>
-  </footer>
-</main>
-
-<section class="player" id="player">
-  <div class="player-edge"></div>
-  <canvas class="spectrum" id="spectrum"></canvas>
-  <div class="player-main">
-    <button class="pbtn" id="btnPrev" aria-label="上一首">‹</button>
-    <button class="pbtn pbtn-play" id="btnPlay" aria-label="播放/暂停"><span class="ico-play">▶</span><span class="ico-pause">Ⅱ</span></button>
-    <button class="pbtn" id="btnNext" aria-label="下一首">›</button>
-    <div class="track">
-      <div class="track-top"><span class="track-label">NOW PLAYING</span><span class="track-name" id="trackName">未播放</span></div>
-      <div class="track-bar">
-        <span class="time" id="timeCurrent">00:00</span>
-        <input class="range" id="progress" type="range" min="0" max="1000" value="0" aria-label="播放进度">
-        <span class="time" id="timeDuration">00:00</span>
-      </div>
-    </div>
-    <div class="vol"><span class="volume-mark">◒</span><input class="range range-vol" id="volume" type="range" min="0" max="100" value="40" aria-label="音量"></div>
-    <button class="pbtn list-toggle" id="btnList" aria-label="播放列表">☰</button>
-  </div>
-  <ul class="playlist" id="playlist"></ul>
+<div class="loader" id="loader"><div class="loader-dot"></div></div>
+<div class="bg" id="bg"><div class="bg-img is-active" id="bgA"></div><div class="bg-img" id="bgB"></div><div class="bg-mask" id="bgMask"></div></div>
+<canvas class="fx-canvas" id="fxParticles"></canvas><canvas class="fx-canvas" id="fxCursor"></canvas><canvas class="fx-canvas" id="fxClick"></canvas>
+<main class="page">
+<div class="slot" id="slotAbove"></div>
+<section class="hero">
+  <div class="avatar-wrap"><img class="avatar" id="avatar" alt="头像"></div>
+  <h1 class="big-title" id="bigTitle"></h1>
+  <div class="subtitle"><span id="typewriter"></span><span class="caret" id="caret">|</span></div>
+  <div class="info-row"><span class="chip" id="greeting"></span><span class="chip" id="clock"></span><span class="chip" id="weather"></span></div>
+  <div class="hitokoto" id="hitokoto"></div>
+  <form class="search" id="searchForm">
+    <div class="engine" id="engineWrap"><button type="button" class="engine-current" id="engineCurrent"><span id="engineName">Google</span><span class="chevron">⌄</span></button><ul class="engine-list" id="engineList"></ul></div>
+    <input class="search-input" id="searchInput" type="search" autocomplete="off">
+    <span class="search-key">/</span>
+    <button class="search-btn" type="submit" aria-label="搜索">↗</button>
+  </form>
 </section>
-
-<div class="ctx-menu" id="ctxMenu"></div>
-<audio id="audio" preload="metadata"></audio>
-<script src="js/config.js"></script>
-<script src="js/effects.js"></script>
-<script src="js/main.js"></script>
-</body>
-</html>
+<div class="slot" id="slotBelow"></div><div class="slot" id="slotBottom"></div>
+<footer class="footer" id="footer"><div class="social" id="social"></div><div class="footer-text" id="footerText"></div><div class="visit" id="visitCount"></div></footer>
+</main>
+<section class="player" id="player">
+<canvas class="spectrum" id="spectrum"></canvas>
+<div class="player-main">
+<button class="pbtn" id="btnPrev">‹</button><button class="pbtn play" id="btnPlay"><span class="ico-play">▶</span><span class="ico-pause">Ⅱ</span></button><button class="pbtn" id="btnNext">›</button>
+<div class="track"><div class="track-name" id="trackName">未播放</div><div class="track-bar"><span class="time" id="timeCurrent">0:00</span><input class="range" id="progress" type="range" min="0" max="1000" value="0"><span class="time" id="timeDuration">0:00</span></div></div>
+<input class="range range-vol" id="volume" type="range" min="0" max="100" value="40"><button class="pbtn list" id="btnList">☰</button>
+</div><ul class="playlist" id="playlist"></ul></section>
+<div class="ctx-menu" id="ctxMenu"></div><audio id="audio" preload="metadata"></audio>
+<script src="js/config.js"></script><script src="js/effects.js"></script><script src="js/main.js"></script>
+</body></html>
