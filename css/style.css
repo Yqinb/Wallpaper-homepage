@@ -184,3 +184,30 @@ body{background:#08090d}
     box-shadow:0 18px 50px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.06);
   }
 }
+
+
+/* interaction fixes: keep dropdown below and keep fixed player centered */
+.engine-list{
+  top:calc(100% + 10px) !important;
+  bottom:auto !important;
+  transform:translateY(-8px) scale(.97) !important;
+}
+.engine.is-open .engine-list{
+  transform:translateY(0) scale(1) !important;
+}
+
+.player{
+  box-sizing:border-box;
+  width:min(880px,calc(100vw - 32px));
+  animation:playerIn .7s var(--ease) .3s both;
+}
+@keyframes playerIn{
+  from{opacity:0;transform:translateX(-50%) translateY(12px)}
+  to{opacity:1;transform:translateX(-50%) translateY(0)}
+}
+@media(max-width:1024px){
+  .player{width:calc(100vw - 24px);left:50%;right:auto}
+}
+@media(max-width:768px){
+  .player{width:calc(100vw - 18px);left:50%;right:auto}
+}
