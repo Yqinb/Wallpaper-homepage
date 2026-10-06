@@ -68,6 +68,20 @@ const CONFIG = {
   },
 
   /* =========================
+   * ④ 自动壁纸
+   * ========================= */
+  wallpaper: {
+    enabled: true,
+    source: "picsum",
+    width: 2560,
+    height: 1440,
+    interval: 10 * 60 * 1000,
+    fadeDuration: 1800,
+    randomize: true,
+    fallbackToLocal: true
+  },
+
+  /* =========================
    * ④ 音乐
    * ========================= */
   bgm: {
