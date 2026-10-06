@@ -498,6 +498,28 @@
       if (e.key === 'Escape') wrap.classList.remove('is-open');
     });
 
+    // 键盘入口：/ 或 Ctrl/Cmd + K 直接聚焦搜索
+    document.addEventListener('keydown', function (e) {
+      const target = e.target;
+      const typing = target && (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable
+      );
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        input.focus();
+        input.select();
+        return;
+      }
+
+      if (e.key === '/' && !typing && !e.altKey && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        input.focus();
+      }
+    });
+
     // 提交搜索
     form.addEventListener('submit', function (e) {
       e.preventDefault();
