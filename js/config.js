@@ -105,7 +105,7 @@ const CONFIG = {
    * ========================= */
   search: {
     enabled: true,
-    defaultEngine: "google",
+    defaultEngine: "baidu",
     engines: [
       { key: "google",   name: "Google", url: "https://www.google.com/search?q={query}" },
       { key: "bing",     name: "Bing",   url: "https://www.bing.com/search?q={query}" },
