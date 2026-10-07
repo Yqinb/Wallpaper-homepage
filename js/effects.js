@@ -495,7 +495,9 @@ window.FX = (function () {
    * 使用 pointerdown 监听，因此在移动端触摸同样有效
    * ======================================================================= */
   FX.initClick = function (canvas, cfg) {
-    if (!canvas || !cfg || !cfg.enabled) { if (canvas) canvas.style.display = 'none'; return; }
+    // 全局关闭点击视觉特效（波纹 / 粒子），保留点击事件本身
+    if (canvas) canvas.style.display = 'none';
+    return;
 
     const s = setupCanvas(canvas);
     const ctx = s.ctx;
