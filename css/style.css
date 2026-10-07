@@ -358,3 +358,34 @@ a,
     bottom:14px;
   }
 }
+
+
+/* mobile touch feedback: keep interaction, remove pressed visual effects */
+@media (hover:none) and (pointer:coarse){
+  html,
+  body,
+  button,
+  a,
+  input,
+  [role="button"]{
+    -webkit-tap-highlight-color:transparent !important;
+  }
+
+  .pbtn:active,
+  .search-btn:active,
+  .sc-arrow:active,
+  .social a:active,
+  .engine-current:active,
+  .engine-list li:active,
+  .playlist li:active,
+  .ctx-menu li:active,
+  .sc-dots .dot:active,
+  .avatar-wrap:active .avatar{
+    transform:none !important;
+    filter:none !important;
+  }
+
+  .search:focus-within{
+    transform:none !important;
+  }
+}
