@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RoboCode · 用游戏学编程</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b1220;color:#e2e8f0;font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;min-height:100vh}
+.wrap{max-width:1080px;margin:0 auto;padding:24px 16px 48px}
+header{margin-bottom:20px}header h1{font-size:22px;margin:0 0 4px}header p{margin:0;color:#94a3b8;font-size:14px}
+.main{display:flex;gap:24px;align-items:flex-start}.left{flex:0 1 auto;max-width:470px}.right{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:10px}
+.level-bar{margin-bottom:10px}#levelTitle{display:block;font-weight:600;font-size:15px}#levelGoal{display:block;font-size:13px;color:#94a3b8;margin-top:2px}
+canvas{border-radius:12px;display:block;background:#1e293b;max-width:100%}
+.hint{margin-top:10px;font-size:13px;color:#7dd3fc;line-height:1.6}
+.editor-head{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#94a3b8}
+.editor-head button{padding:4px 10px;font-size:12px;background:#1e293b;color:#94a3b8}
+#code{width:100%;height:230px;background:#0f172a;color:#e2e8f0;border:1px solid #1e293b;border-radius:10px;padding:12px;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;line-height:1.65;resize:vertical;outline:none;tab-size:2}
+#code:focus{border-color:#38bdf8;box-shadow:0 0 0 3px rgba(56,189,248,.12)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+button{border:none;border-radius:8px;padding:9px 16px;font-size:14px;cursor:pointer;background:#1e293b;color:#cbd5e1;font-family:inherit;transition:.15s}
+button:hover:not(:disabled){background:#334155}button.primary{background:#0ea5e9;color:#fff;font-weight:600}button.primary:hover:not(:disabled){background:#38bdf8}button:disabled{opacity:.4;cursor:not-allowed}
+.console{background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:12px;font-size:13.5px;min-height:48px;line-height:1.5;color:#64748b;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.console.ok{color:#4ade80;border-color:#14532d;background:#052e16}.console.error{color:#fca5a5;border-color:#7f1d1d;background:#2a0e0e}.console.warn{color:#fcd34d;border-color:#78350f;background:#2a1f05}
+.console .next{margin-left:10px;padding:5px 12px;font-size:13px;background:#16a34a;color:#fff;font-weight:600}.console .next:hover{background:#22c55e}
+.api-help{font-size:12.5px;color:#64748b;line-height:2}.api-help b{color:#94a3b8;display:block;margin-bottom:2px}.api-help code{background:#1e293b;padding:2px 7px;border-radius:5px;color:#7dd3fc;font-family:ui-monospace,monospace;margin-right:4px}
+.back{display:inline-flex;margin-top:14px;color:#7dd3fc;font-size:13px;text-decoration:none}.back:hover{text-decoration:underline}
+@media(max-width:820px){.main{flex-direction:column}.left{max-width:100%;width:100%}.right{width:100%}canvas{width:100%;height:auto}#code{height:210px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>🤖 RoboCode</h1><p>写代码，指挥机器人闯关 —— 在游戏里学会编程</p><a class="back" href="./index.html">← 返回主页</a></header>
+<div class="main">
+<div class="left"><div class="level-bar"><span id="levelTitle"></span><span id="levelGoal"></span></div><canvas id="board"></canvas><div class="hint" id="hint"></div></div>
+<div class="right">
+<div class="editor-head"><span>📝 代码编辑器</span><button id="resetCode">恢复示例</button></div>
+<textarea id="code" spellcheck="false"></textarea>
+<div class="actions"><button id="runBtn" class="primary">▶ 运行 (Ctrl+Enter)</button><button id="stopBtn" disabled>■ 停止</button></div>
+<div class="console" id="console">准备好了就点「运行」试试吧。</div>
+<div class="api-help"><b>可用指令</b><code>move()</code>前进一步 <code>turnLeft()</code>左转 <code>turnRight()</code>右转 <code>canMove()</code>前方能否走 <code>onStar()</code>脚下有星星吗 <code>take()</code>捡起星星 <code>atGoal()</code>到终点了吗 <code>print(x)</code>打印信息</div>
+</div></div></div>
+<script>
+const DIRS=[{dx:1,dy:0,angle:0},{dx:0,dy:1,angle:Math.PI/2},{dx:-1,dy:0,angle:Math.PI},{dx:0,dy:-1,angle:-Math.PI/2}];
+const LEVELS=[
+{title:"第 1 关 · 前进",goalText:"让机器人走到旗子那里。",size:5,start:{x:0,y:4,dir:0},goal:{x:4,y:4},walls:[],stars:[],starter:"// move() 让机器人向前走一格\n// 试着写 4 行 move()\n\n",tip:"💡 机器人现在朝右。每写一次 move() 它就往前走一格。"},
+{title:"第 2 关 · 转弯",goalText:"先向右走，再向上走到旗子。",size:5,start:{x:0,y:4,dir:0},goal:{x:2,y:0},walls:[],stars:[],starter:"// turnLeft() 左转，turnRight() 右转\n// 记住：转弯只是改变方向，不会移动\n\n",tip:"💡 先 move() 两次，然后 turnLeft()，再 move() 四次。"},
+{title:"第 3 关 · 循环",goalText:"路很长，用循环让代码短一点。",size:8,start:{x:0,y:7,dir:0},goal:{x:7,y:7},walls:[],stars:[],starter:"// 要走 7 格，写 7 行 move() 太累了\n// 用 for 循环：\n// for (let i = 0; i < 7; i++) { move() }\n\n",tip:"💡 for 循环会把你写在大括号里的代码重复执行很多次。"},
+{title:"第 4 关 · 收集星星",goalText:"捡起沿途所有星星，再到旗子那里。",size:7,start:{x:0,y:6,dir:0},goal:{x:6,y:6},walls:[],stars:[{x:2,y:6},{x:4,y:6}],starter:"// onStar() 问：我脚下有星星吗？\n// take() 把星星捡起来\n// 用 if 来「有星星才捡」\n\n",tip:"💡 循环里写：move()，然后 if (onStar()) take()。"},
+{title:"第 5 关 · 绕过障碍",goalText:"用 canMove() 判断前方能不能走。",size:7,start:{x:0,y:6,dir:0},goal:{x:6,y:0},walls:[{x:4,y:6},{x:5,y:6},{x:6,y:6},{x:4,y:5},{x:5,y:5},{x:6,y:5},{x:4,y:4},{x:5,y:4},{x:6,y:4},{x:3,y:2},{x:4,y:2},{x:5,y:2}],stars:[],starter:"// while (canMove()) move() 的意思是：\n// 「只要前面能走，就一直往前走」\n\n",tip:"💡 一段直路走完后用 turnLeft() / turnRight() 换方向，再继续 while。"}
+];
+const canvas=document.getElementById('board'),ctx=canvas.getContext('2d'),codeEl=document.getElementById('code');
+let levelIndex=0,level=LEVELS[0],cellSize=60,view=null,playTimer=null,running=false;
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function drawStarPath(cx,cy,r){ctx.beginPath();for(let i=0;i<10;i++){const ang=-Math.PI/2+i*Math.PI/5,rad=i%2===0?r:r*.45,px=cx+Math.cos(ang)*rad,py=cy+Math.sin(ang)*rad;if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py)}ctx.closePath()}
+function resizeCanvas(){const wrapWidth=Math.min(460,canvas.parentElement.clientWidth||460);cellSize=Math.max(34,Math.floor(wrapWidth/level.size));const w=cellSize*level.size,dpr=window.devicePixelRatio||1;canvas.width=w*dpr;canvas.height=w*dpr;canvas.style.width=w+'px';canvas.style.height=w+'px';ctx.setTransform(dpr,0,0,dpr,0,0)}
+function render(){if(!view)return;const n=level.size,c=cellSize,W=n*c;ctx.clearRect(0,0,W,W);for(let y=0;y<n;y++)for(let x=0;x<n;x++){ctx.fillStyle=(x+y)%2===0?'#1e293b':'#182136';ctx.fillRect(x*c,y*c,c,c)}
+const gx=level.goal.x*c+c/2,gy=level.goal.y*c+c/2;ctx.beginPath();ctx.arc(gx,gy,c*.32,0,Math.PI*2);ctx.fillStyle='rgba(244,114,182,.12)';ctx.fill();ctx.strokeStyle='#f472b6';ctx.lineWidth=Math.max(2,c*.045);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(gx-c*.08,gy+c*.26);ctx.lineTo(gx-c*.08,gy-c*.26);ctx.stroke();ctx.beginPath();ctx.moveTo(gx-c*.08,gy-c*.26);ctx.lineTo(gx+c*.26,gy-c*.10);ctx.lineTo(gx-c*.08,gy+c*.04);ctx.closePath();ctx.fillStyle='#f472b6';ctx.fill();
+ctx.fillStyle='#475569';for(const w of level.walls){roundRect(w.x*c+3,w.y*c+3,c-6,c-6,6);ctx.fill()}
+for(const s of view.stars){const [sx,sy]=s.split(',').map(Number);drawStarPath(sx*c+c/2,sy*c+c/2,c*.24);ctx.fillStyle='#fbbf24';ctx.fill()}
+const bx=view.x*c+c/2,by=view.y*c+c/2,r=c*.3;ctx.save();ctx.translate(bx,by);ctx.beginPath();ctx.arc(0,0,r*1.5,0,Math.PI*2);ctx.fillStyle='rgba(56,189,248,.12)';ctx.fill();ctx.rotate(DIRS[view.dir].angle);ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fillStyle='#38bdf8';ctx.fill();ctx.beginPath();ctx.moveTo(r*1.05,0);ctx.lineTo(r*.15,-r*.55);ctx.lineTo(r*.15,r*.55);ctx.closePath();ctx.fillStyle='#0b1220';ctx.fill();ctx.restore()}
+function executeCode(userCode,lv){const wallSet=new Set(lv.walls.map(w=>w.x+','+w.y)),state={x:lv.start.x,y:lv.start.y,dir:lv.start.dir,stars:new Set(lv.stars.map(s=>s.x+','+s.y)),frames:[],log:[]};let steps=0;const MAX_STEPS=5000,inBounds=(x,y)=>x>=0&&y>=0&&x<lv.size&&y<lv.size,blocked=(x,y)=>!inBounds(x,y)||wallSet.has(x+','+y);
+function record(){state.frames.push({x:state.x,y:state.y,dir:state.dir,stars:Array.from(state.stars)})}function tick(){if(++steps>MAX_STEPS)throw new Error('程序跑的步数太多啦，是不是写了死循环？')}
+const api={move(){tick();const d=DIRS[state.dir],nx=state.x+d.dx,ny=state.y+d.dy;if(blocked(nx,ny))throw new Error('撞墙了！前方走不通 💥');state.x=nx;state.y=ny;record()},turnLeft(){tick();state.dir=(state.dir+3)%4;record()},turnRight(){tick();state.dir=(state.dir+1)%4;record()},canMove(){tick();const d=DIRS[state.dir];return !blocked(state.x+d.dx,state.y+d.dy)},onStar(){tick();return state.stars.has(state.x+','+state.y)},take(){tick();const k=state.x+','+state.y;if(!state.stars.has(k))throw new Error('这里没有星星可以捡 😐');state.stars.delete(k);record()},atGoal(){tick();return state.x===lv.goal.x&&state.y===lv.goal.y},print(...args){state.log.push(args.map(String).join(' '))}};
+record();let error=null;try{const names=Object.keys(api),values=names.map(k=>api[k]),fn=new Function(...names,'"use strict";\n'+userCode);fn(...values)}catch(e){error=e instanceof Error?e.message:String(e)}
+return{frames:state.frames,error,win:!error&&state.x===lv.goal.x&&state.y===lv.goal.y&&state.stars.size===0,log:state.log}}
+function thin(frames,max){if(frames.length<=max)return frames;const out=[],stride=frames.length/max;for(let i=0;i<max;i++)out.push(frames[Math.floor(i*stride)]);out.push(frames[frames.length-1]);return out}
+function playFrames(rawFrames,done){const frames=thin(rawFrames,260),interval=Math.max(28,Math.min(230,4200/frames.length));let i=0;const step=()=>{if(i>=frames.length){playTimer=null;done();return}view=frames[i++];render();playTimer=setTimeout(step,interval)};step()}
+function stopPlayback(){if(playTimer){clearTimeout(playTimer);playTimer=null}running=false;updateButtons()}
+function updateButtons(){document.getElementById('runBtn').disabled=running;document.getElementById('stopBtn').disabled=!running}
+function showConsole(html,cls){const el=document.getElementById('console');el.className='console'+(cls?' '+cls:'');el.innerHTML=html}
+function run(){if(running)return;const code=codeEl.value;let result;try{result=executeCode(code,level)}catch(e){showConsole('❌ '+e.message,'error');return}running=true;updateButtons();showConsole('⏳ 运行中…');playFrames(result.frames,()=>{running=false;updateButtons();if(result.error){showConsole('❌ '+result.error,'error');return}if(result.win){if(levelIndex<LEVELS.length-1){showConsole('🎉 通过！<button class="next" id="nextBtn">进入下一关 →</button>','ok');const btn=document.getElementById('nextBtn');if(btn)btn.onclick=()=>loadLevel(levelIndex+1)}else showConsole('🏆 全部通关！你已经学会用代码指挥机器人啦，试试自己改改代码玩吧。','ok')}else showConsole('🤔 机器人还没到达旗子（或者星星没捡完），再想想～','warn')})}
+function loadLevel(i){stopPlayback();levelIndex=i;level=LEVELS[i];view={x:level.start.x,y:level.start.y,dir:level.start.dir,stars:level.stars.map(s=>s.x+','+s.y)};document.getElementById('levelTitle').textContent=level.title;document.getElementById('levelGoal').textContent=level.goalText;document.getElementById('hint').textContent=level.tip;codeEl.value=level.starter;showConsole('准备好了就点「运行」试试吧。');resizeCanvas();render()}
+document.getElementById('runBtn').onclick=run;document.getElementById('stopBtn').onclick=()=>{stopPlayback();showConsole('已停止。','warn')};document.getElementById('resetCode').onclick=()=>{codeEl.value=level.starter};
+codeEl.addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();const s=codeEl.selectionStart,en=codeEl.selectionEnd;codeEl.value=codeEl.value.slice(0,s)+'  '+codeEl.value.slice(en);codeEl.selectionStart=codeEl.selectionEnd=s+2}if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();run()}});
+let resizeTimer=null;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{resizeCanvas();render()},100)});loadLevel(0);
+</script>
+</body>
+</html>
