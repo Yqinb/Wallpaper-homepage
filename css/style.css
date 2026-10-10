@@ -389,3 +389,30 @@ a,
     transform:none !important;
   }
 }
+
+
+/* RoboCode shortcut */
+.game-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  margin-top:2px;
+  padding:10px 16px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:999px;
+  background:rgba(8,10,20,.28);
+  color:rgba(255,255,255,.78);
+  font-size:12px;
+  letter-spacing:.02em;
+  transition:background .2s ease,border-color .2s ease,color .2s ease;
+}
+.game-link span{color:var(--primary);font-size:15px}
+.game-link:hover{
+  background:rgba(255,255,255,.08);
+  border-color:rgba(255,255,255,.3);
+  color:#fff;
+}
+@media(max-width:768px){
+  .game-link{margin-top:0;padding:9px 14px;font-size:11px}
+}
