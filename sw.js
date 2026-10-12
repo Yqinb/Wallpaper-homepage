@@ -1,4 +1,4 @@
-const CACHE='wallpaper-homepage-shell-v2';
+const CACHE='wallpaper-homepage-shell-v3';
 const CORE=['./','./index.html','./robocode.html','./css/style.css','./css/desktop.css','./js/config.js','./js/effects.js','./js/main.js','./js/desktop.js','./manifest.json'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE.map(u=>new Request(u,{cache:'reload'}))).catch(()=>{})).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
