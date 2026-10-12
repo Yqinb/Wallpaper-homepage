@@ -244,7 +244,7 @@
 
       if (get('wallpaper.interval', 0) > 0) {
         setInterval(function () {
-          if (document.hidden) return;
+          if (document.hidden || window.__desktopCustomWallpaper) return;
           swap(remoteUrl(), get('wallpaper.fallbackToLocal', true));
         }, Math.max(30000, get('wallpaper.interval', 600000)));
       }
