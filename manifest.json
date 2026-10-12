@@ -1,0 +1,11 @@
+{
+  "name": "Wallpaper OS · 个人桌面",
+  "short_name": "Wallpaper OS",
+  "description": "可自由排列组件的纯前端个人桌面",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#08090d",
+  "theme_color": "#08090d",
+  "icons": []
+}
